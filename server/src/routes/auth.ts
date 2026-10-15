@@ -67,8 +67,10 @@ export function authRoutes(deps: Deps): Router {
   })
 
   /** The signed-in user, their organizations and any invites waiting for their email. */
-  r.get('/me', requireUser, async (req, res) => {
-    const user = req.user!
+  r.get('/me', async (req, res) => {
+    // Signed out is a normal state for this endpoint, not an error.
+    if (!req.user) return res.json({ user: null, orgs: [], invites: [] })
+    const user = req.user
     const data = await db.tx({ userId: user.id, userEmail: user.email }, async (c) => {
       const orgs = await c.query(
         `SELECT o.id, o.name, o.slug, o.plan, m.role

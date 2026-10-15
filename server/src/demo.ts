@@ -66,8 +66,8 @@ export async function seedDemoOrg(db: Db, ip: string | null): Promise<{ userId: 
     await c.query(`INSERT INTO invites (org_id, email, role, invited_by) VALUES ($1, $2, 'member', $3)`, [org.id, `lee-${tag}@${DEMO_DOMAIN}`, user.id])
 
     const featureBoard = (await c.query(`SELECT id FROM boards WHERE slug = 'feature-requests'`)).rows[0].id
-    const bugBoard = (await c.query(`INSERT INTO boards (org_id, name, slug, is_public, created_at) VALUES ($1, 'Bug Reports', 'bug-reports', true, now() - interval '60 days') RETURNING id`, [org.id])).rows[0].id
-    const internalBoard = (await c.query(`INSERT INTO boards (org_id, name, slug, is_public, created_at) VALUES ($1, 'Internal Roadmap', 'internal-roadmap', false, now() - interval '60 days') RETURNING id`, [org.id])).rows[0].id
+    const bugBoard = (await c.query(`INSERT INTO boards (org_id, name, slug, is_public, created_at) VALUES ($1, 'Bug Reports', 'bug-reports', true, now() + interval '1 second') RETURNING id`, [org.id])).rows[0].id
+    const internalBoard = (await c.query(`INSERT INTO boards (org_id, name, slug, is_public, created_at) VALUES ($1, 'Internal Roadmap', 'internal-roadmap', false, now() + interval '2 seconds') RETURNING id`, [org.id])).rows[0].id
     const boardId = { feature: featureBoard, bug: bugBoard, internal: internalBoard }
 
     let number = 0

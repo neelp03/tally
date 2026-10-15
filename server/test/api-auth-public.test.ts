@@ -135,7 +135,8 @@ describe('accounts and sessions', () => {
     assert.equal((await fresh.post('/api/auth/login', { email: u.email, password: 'password123' })).status, 200)
     assert.equal((await fresh.get('/api/me')).status, 200)
     await fresh.post('/api/auth/logout')
-    assert.equal((await fresh.get('/api/me')).status, 401)
+    assert.equal((await fresh.get('/api/me')).data.user, null)
+    assert.equal((await fresh.get('/api/orgs/00000000-0000-0000-0000-000000000000')).status, 401)
   })
 
   test('duplicate sign-up is refused', async () => {
