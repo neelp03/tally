@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: tally_owner
+          POSTGRES_PASSWORD: tally_owner
+          POSTGRES_DB: tally
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U tally_owner -d tally"
+          --health-interval 2s --health-timeout 3s --health-retries 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - name: Create the app role and test database
+        run: psql postgres://tally_owner:tally_owner@localhost:5433/tally -f server/db-init/01-roles.sql
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build and start the app with its database
+        run: docker compose --profile app up -d --build --wait
+      - name: Smoke test
+        run: |
+          curl -fs localhost:3002/api/health
+          curl -fs localhost:3002/api/config
+          curl -fs -X POST -H 'x-requested-with: tally' localhost:3002/api/demo
+      - if: failure()
+        run: docker compose --profile app logs

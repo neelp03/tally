@@ -1,0 +1,39 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+databases:
+  - name: tally-db
+    plan: free
+    databaseName: tally
+
+services:
+  - type: web
+    name: tally
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: tally-db
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DEMO_MODE
+        value: "true"
+      - key: TRUST_PROXY
+        value: "1"
+      # Optional. Leave empty to run billing in demo mode.
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PRICE_PRO
+        sync: false
+      - key: STRIPE_PRICE_BUSINESS
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: PLATFORM_ADMIN_EMAILS
+        sync: false
